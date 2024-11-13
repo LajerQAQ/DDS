@@ -24,6 +24,7 @@ class Diffusion(object):
         for t in ["input", "recon", "label"]:
             if t == "recon":
                 (self.args.image_folder / t / "progress").mkdir(exist_ok=True, parents=True)
+                (self.args.image_folder / t / "progress_cg").mkdir(exist_ok=True, parents=True)
             else:
                 (self.args.image_folder / t).mkdir(exist_ok=True, parents=True)
         self.config = config
@@ -230,6 +231,7 @@ class Diffusion(object):
                     c1 = (1 - at_next).sqrt() * eta
                     c2 = (1 - at_next).sqrt() * ((1 - eta ** 2) ** 0.5)
 
+                    plt.imsave(str(self.args.image_folder / "recon" / f"progress_cg" / f"reco_{str(j).zfill(3)}.png"), np.abs(clear(real_to_nchw_comp(x0_t_hat))), cmap='gray')
                     # DDIM sampling
                     if j != 0:
                         xt_next = at_next.sqrt() * x0_t_hat + c1 * torch.randn_like(x0_t_hat) + c2 * et
@@ -249,8 +251,25 @@ class Diffusion(object):
             # compute PSNR betwee x_orig_sv and x_sv
             psnr = peak_signal_noise_ratio(normalize_np(np.abs(x_orig_sv)),
                                            normalize_np(np.abs(x_sv)))
+            # print(f"PSNR_abs: {psnr:.2f}")
+
+            # #save the error image
+            # #normalize x_orig_sv and x_sv
+            # print("max, min")
+            # print(np.abs(x_orig_sv).max(), np.abs(x_orig_sv).min())
+            # print(np.abs(x_sv).max(), np.abs(x_sv).min())
+            # x_error = np.abs(x_orig_sv - x_sv)
+            # plt.imsave(str(self.args.image_folder / "recon" / f"error_{str(idx).zfill(3)}.png"), x_error, cmap='gray')
+
+            # x_orig_sv = np.abs(x_orig_sv)
+            # x_sv = np.abs(x_sv)
+            # psnr = 10 * np.log10((np.max(np.abs(x_orig_sv)) ** 2) / np.mean(np.abs(x_orig_sv - x_sv) ** 2)) if np.mean(np.abs(x_orig_sv - x_sv) ** 2) != 0 else float('inf')
+            # snr = 10 * np.log10(np.mean(np.abs(x_orig_sv) ** 2) / np.mean(np.abs(x_orig_sv - x_sv) ** 2)) if np.mean(np.abs(x_orig_sv - x_sv) ** 2) != 0 else float('inf')
+
+
+
             summary = {}
-            summary["results"] = {"PSNR": psnr}
+            summary["results"] = {"PSNR": psnr}#, "SNR": snr}
             with open(str(self.args.image_folder / f"summary.json"), 'w') as f:
                 json.dump(summary, f)
             print(f"PSNR: {psnr:.2f}")
