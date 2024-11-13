@@ -1,7 +1,11 @@
 indist_samples
 exp
 __pycache__
+indist_samples
+exp
+__pycache__
 *.png
 *.mp4
 *.zip
 *.json
+cache
